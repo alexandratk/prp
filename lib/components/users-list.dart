@@ -63,7 +63,11 @@ class _UsersListState extends State<UsersList> {
         future: AuthService().getUserData(filterNickname),
         builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Text("Loading");
+            return Center(
+              child: CircularProgressIndicator(
+                  // valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+            );
           }
           return Expanded(
               child: Padding(
@@ -141,7 +145,7 @@ class _UsersListState extends State<UsersList> {
             ),
             onPressed: () {
               setState(() {
-                filterHeight = (filterHeight == 0.0 ? 160.0 : 0.0);
+                filterHeight = (filterHeight == 0.0 ? 180.0 : 0.0);
               });
             },
           ),
@@ -150,7 +154,7 @@ class _UsersListState extends State<UsersList> {
     var filterForm = AnimatedContainer(
       margin: EdgeInsets.symmetric(vertical: 0.0, horizontal: 7),
       child: Padding(
-        padding: EdgeInsets.only(top: 15, left: 50, right: 50),
+        padding: EdgeInsets.only(top: 0, left: 50, right: 50),
         child: Card(
           child: Padding(
             padding: EdgeInsets.only(top: 15, left: 50, right: 50),
@@ -162,7 +166,7 @@ class _UsersListState extends State<UsersList> {
                   onChanged: (String val) => filterNicknameInput = val,
                 ),
                 Padding(
-                  padding: EdgeInsets.only(top: 20),
+                  padding: EdgeInsets.only(top: 25),
                   child: Row(
                     children: <Widget>[
                       Expanded(

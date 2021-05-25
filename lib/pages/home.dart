@@ -46,7 +46,7 @@ class _HomePageState extends State<HomePage> {
                 },
                 color: Colors.white24,
                 icon: Icon(
-                  Icons.supervised_user_circle,
+                  Icons.notes_outlined,
                   color: Colors.white,
                 ),
                 label: Text("Notes"),
