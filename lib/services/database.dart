@@ -28,6 +28,10 @@ class GetUserName extends StatelessWidget {
     });
     return Text("loading");
   }
+  
+  void noAccessMessage(String name) {
+    print("$name has no rights to access database!");
+  }
 }
 
 /*class DatabaseService {
