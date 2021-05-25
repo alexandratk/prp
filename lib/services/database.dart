@@ -9,6 +9,15 @@ class GetUserName extends StatelessWidget {
   final CollectionReference _notesCollection =
       FirebaseFirestore.instance.collection('notes');
   final firestoreInstance = FirebaseFirestore.instance;
+
+  readData () {
+    firestoreInstance.collection("users").get().then((querySnapshot) {
+      querySnapshot.docs.forEach((result) {
+        print(result.data());
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     print("//////////////////////");
