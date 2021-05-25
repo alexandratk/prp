@@ -55,7 +55,7 @@ class AuthService {
 
   deleteNotes(String uid) {
     collectionReferenceNotes.doc(uid).delete().then((_) {
-      print("success!");
+      print("_success!");
     });
   }
 
