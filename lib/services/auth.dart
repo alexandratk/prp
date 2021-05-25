@@ -59,10 +59,18 @@ class AuthService {
     });
   }
 
-  getPublicNotes() {
-    return FirebaseFirestore.instance
-        .collection('notes')
-        .where('public', isEqualTo: true)
-        .snapshots();
+  getPublicNotes(String nickname) {
+    if (nickname == "All users" || nickname == "") {
+      return FirebaseFirestore.instance
+          .collection('notes')
+          .where('public', isEqualTo: true)
+          .snapshots();
+    } else {
+      return FirebaseFirestore.instance
+          .collection('notes')
+          .where('public', isEqualTo: true)
+          .where('user_nickname', isEqualTo: nickname)
+          .snapshots();
+    }
   }
 }

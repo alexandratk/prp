@@ -11,152 +11,233 @@ class NotesList extends StatefulWidget {
 }
 
 class _NotesListState extends State<NotesList> {
+  @override
+  void initState() {
+    clearFilter();
+    super.initState();
+  }
+
   TextEditingController searchController = TextEditingController();
+  var notesList;
+  final firestoreInstance = FirebaseFirestore.instance;
+  var filterNickname = "All users";
+  var filterNicknameInput = "";
+  var filterOnlyMyUsers = false;
+  var filterTitle = "title";
+  var filterTitleController = TextEditingController();
+  var filterLevel = "Any level";
+
+  var filterText = "";
+  var filterHeight = 0.0;
+  filter() {
+    setState(() {
+      filterText = filterNickname;
+      filterHeight = 0;
+    });
+  }
+
+  clearFilter() {
+    setState(() {
+      filterNickname = "All users";
+      filterText = filterNickname;
+      filterOnlyMyUsers = false;
+      filterTitle = '';
+      filterLevel = 'Any Level';
+      filterTitleController.clear();
+      filterHeight = 0;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        backgroundColor: Theme.of(context).highlightColor,
-        body: StreamBuilder(
-          stream: AuthService().getPublicNotes(),
-          builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-            if (!snapshot.hasData) {
-              return Center(
-                child: CircularProgressIndicator(
-                    // valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-              );
-            } else if (snapshot.hasData) {
-              return SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.only(top: 15, left: 10, right: 10),
-                      //  child: textField(searchController, Icon(Icons.search),
-                      //    Color(0x1A008B83), 'Search by title')
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(top: 15, left: 50, right: 50),
-                      child: ListView.builder(
-                          physics: NeverScrollableScrollPhysics(),
-                          scrollDirection: Axis.vertical,
-                          shrinkWrap: true,
-                          itemCount: snapshot.data!.docs.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            return Container(
-                                height: 229,
-                                child: Card(
-                                    color: Colors.white,
-                                    elevation: 2.0,
-                                    margin: EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 4),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(15.0)),
-                                    child: ListView(
-                                      physics: NeverScrollableScrollPhysics(),
-                                      children: [
-                                        Column(
-                                          children: [
-                                            ListTile(
-                                              trailing: IconButton(
-                                                onPressed: () {
-                                                  showDialog(
-                                                      context: context,
-                                                      builder:
-                                                          (_) =>
-                                                              new AlertDialog(
-                                                                content: new Text(
-                                                                    "Delete notes " +
-                                                                        snapshot
-                                                                            .data!
-                                                                            .docs[index]['title'] +
-                                                                        "?"),
-                                                                actions: <
-                                                                    Widget>[
-                                                                  ListTile(
-                                                                      trailing:
-                                                                          FlatButton(
-                                                                        child: Text(
-                                                                            'NO'),
-                                                                        onPressed:
-                                                                            () {
-                                                                          Navigator.of(context)
-                                                                              .pop();
-                                                                        },
-                                                                      ),
-                                                                      leading:
-                                                                          FlatButton(
-                                                                        child: Text(
-                                                                            'YES'),
-                                                                        onPressed:
-                                                                            () {
-                                                                          setState(
-                                                                              () {
-                                                                            AuthService().deleteNotes(snapshot.data!.docs[index].id);
-                                                                            Navigator.of(context).pop();
-                                                                          });
-                                                                        },
-                                                                      ))
-                                                                ],
-                                                              ));
-                                                },
-                                                icon: Icon(Icons
-                                                    .delete_forever_rounded),
-                                                color: Colors.red,
-                                              ),
-                                            ),
-                                            Image.network(
-                                                '${snapshot.data!.docs[index]['photoUrl']}'),
-                                            Padding(
-                                              padding: EdgeInsets.only(
-                                                  top: 20, left: 30, right: 30),
-                                              child: Text(
-                                                  '${snapshot.data!.docs[index]['title']}',
-                                                  textAlign: TextAlign.center,
-                                                  style: GoogleFonts.poppins(
-                                                      fontSize: 20,
-                                                      fontWeight:
-                                                          FontWeight.w600)),
-                                            ),
-                                            Padding(
-                                              padding: EdgeInsets.only(
-                                                  top: 10, left: 40, right: 40),
-                                              child: Center(
-                                                child: Text(
-                                                    '${snapshot.data!.docs[index]['description'].toString()}',
-                                                    textAlign: TextAlign.center,
-                                                    maxLines: 3,
-                                                    style: GoogleFonts.poppins(
-                                                        fontSize: 18,
-                                                        fontWeight:
-                                                            FontWeight.w400)),
-                                              ),
-                                            ),
-                                            Padding(
-                                                padding:
-                                                    EdgeInsets.only(top: 10),
-                                                child: Center(
-                                                  child: Text('by nickname12 ',
-                                                      maxLines: 3,
-                                                      style:
-                                                          GoogleFonts.poppins(
-                                                              fontSize: 14,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w400)),
-                                                ))
-                                          ],
-                                        ),
-                                      ],
-                                    )));
-                          }),
-                    ),
-                  ],
+    notesList = StreamBuilder(
+      stream: AuthService().getPublicNotes(filterNickname),
+      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        if (!snapshot.hasData) {
+          return Center(
+            child: CircularProgressIndicator(
+                // valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
-              );
-            }
-            return CircularProgressIndicator();
-          },
+          );
+        } else if (snapshot.hasData) {
+          return Padding(
+            padding: EdgeInsets.only(top: 0, left: 50, right: 50),
+            child: ListView.builder(
+                scrollDirection: Axis.vertical,
+                shrinkWrap: true,
+                itemCount: snapshot.data!.docs.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return Container(
+                      height: 100,
+                      child: Card(
+                          color: Colors.white,
+                          elevation: 2.0,
+                          margin:
+                              EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15.0)),
+                          child: ListView(
+                            children: [
+                              Column(
+                                children: [
+                                  ListTile(
+                                    title: Text(
+                                        "title:  " +
+                                            snapshot.data!.docs[index]
+                                                ["title"] +
+                                            "   by nickname:  " +
+                                            snapshot.data!.docs[index]
+                                                ['user_nickname'],
+                                        maxLines: 1,
+                                        textAlign: TextAlign.left),
+                                    trailing: IconButton(
+                                      onPressed: () {
+                                        showDialog(
+                                            context: context,
+                                            builder: (_) => new AlertDialog(
+                                                  content: new Text(
+                                                      "Delete notes " +
+                                                          snapshot.data!
+                                                                  .docs[index]
+                                                              ['title'] +
+                                                          "?"),
+                                                  actions: <Widget>[
+                                                    ListTile(
+                                                        trailing: FlatButton(
+                                                          child: Text('NO'),
+                                                          onPressed: () {
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pop();
+                                                          },
+                                                        ),
+                                                        leading: FlatButton(
+                                                          child: Text('YES'),
+                                                          onPressed: () {
+                                                            setState(() {
+                                                              AuthService()
+                                                                  .deleteNotes(
+                                                                      snapshot
+                                                                          .data!
+                                                                          .docs[
+                                                                              index]
+                                                                          .id);
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop();
+                                                            });
+                                                          },
+                                                        ))
+                                                  ],
+                                                ));
+                                      },
+                                      icon: Icon(Icons.delete_forever_rounded),
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                                  ListTile(
+                                      title: Text(
+                                    '${snapshot.data!.docs[index]['description'].toString()}',
+                                    maxLines: 3,
+                                    textAlign: TextAlign.left,
+                                  )),
+                                ],
+                              ),
+                            ],
+                          )));
+                }),
+          );
+        }
+        return CircularProgressIndicator();
+      },
+    );
+
+    var filterInfo = Padding(
+        padding: EdgeInsets.only(left: 51, right: 51),
+        child: Container(
+          margin: EdgeInsets.only(top: 15, left: 7, right: 7, bottom: 10),
+          color: Colors.white12,
+          height: 40,
+          child: RaisedButton(
+            color: Colors.white,
+            child: Row(
+              children: <Widget>[
+                Icon(Icons.filter_list),
+                Text(
+                  filterText,
+                  style: TextStyle(),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+            onPressed: () {
+              setState(() {
+                filterHeight = (filterHeight == 0.0 ? 160.0 : 0.0);
+              });
+            },
+          ),
         ));
+    var filterForm = AnimatedContainer(
+      margin: EdgeInsets.symmetric(vertical: 0.0, horizontal: 7),
+      child: Padding(
+        padding: EdgeInsets.only(top: 0, left: 50, right: 50),
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.only(top: 0, left: 50, right: 50),
+            child: Column(
+              children: [
+                TextFormField(
+                  controller: filterTitleController,
+                  decoration: const InputDecoration(labelText: 'Nickname'),
+                  onChanged: (String val) => filterNicknameInput = val,
+                ),
+                Padding(
+                  padding: EdgeInsets.only(top: 25),
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                        flex: 1,
+                        child: RaisedButton(
+                          onPressed: () {
+                            filterNickname = filterNicknameInput;
+                            filter();
+                          },
+                          child: Text("Apply",
+                              style: TextStyle(color: Colors.white)),
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      Expanded(
+                        flex: 1,
+                        child: RaisedButton(
+                          onPressed: () {
+                            clearFilter();
+                          },
+                          child: Text("Clear",
+                              style: TextStyle(color: Colors.white)),
+                          color: Colors.red,
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.fastOutSlowIn,
+      height: filterHeight,
+    );
+    return SingleChildScrollView(
+        child: Column(
+      children: <Widget>[
+        filterInfo,
+        filterForm,
+        notesList,
+      ],
+    ));
   }
 }
